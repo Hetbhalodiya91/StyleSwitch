@@ -5,17 +5,23 @@ interface NavItem {
   href: string;
 }
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  children: React.ReactNode;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const navItems: NavItem[] = [
-    { label: 'Browse Collection', href: '#collection' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'About Us', href: '#about' },
+    { label: 'MEN', href: '#collection' },
+    { label: 'WOMEN', href: '#how-it-works' },
+    { label: 'EARN THROUGH US', href: '#pricing' },
+    { label: 'CUSTOMER STORIES', href: '#about' },
   ];
 
   return (
+    <>
+    
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
@@ -120,6 +126,152 @@ const Navbar: React.FC = () => {
         </div>
       )}
     </nav>
+
+      <main className="">
+        {children}
+      </main>
+
+            <footer className="bg-white border-t border-gray-200">
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+
+            {/* Brand */}
+            <div>
+
+              <h3 className="text-xl font-black tracking-wider uppercase">
+                Style Switch
+              </h3>
+
+              <p className="text-sm text-gray-500 leading-relaxed mt-4">
+                Fashion rental for people who believe their wardrobe should
+                never stand still.
+              </p>
+
+            </div>
+
+            {/* Explore */}
+            <div>
+
+              <h4 className="font-bold text-sm">
+                Explore
+              </h4>
+
+              <ul className="mt-4 space-y-3 text-sm text-gray-500">
+                <li>
+                  <a href="#collection" className="hover:text-gray-900">
+                    Collection
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#pricing" className="hover:text-gray-900">
+                    Pricing
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#how-it-works" className="hover:text-gray-900">
+                    How It Works
+                  </a>
+                </li>
+              </ul>
+
+            </div>
+
+            {/* Company */}
+            <div>
+
+              <h4 className="font-bold text-sm">
+                Company
+              </h4>
+
+              <ul className="mt-4 space-y-3 text-sm text-gray-500">
+
+                <li>
+                  <a href="#about" className="hover:text-gray-900">
+                    About Us
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" className="hover:text-gray-900">
+                    Contact
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" className="hover:text-gray-900">
+                    Careers
+                  </a>
+                </li>
+
+              </ul>
+
+            </div>
+
+            {/* Support */}
+            <div>
+
+              <h4 className="font-bold text-sm">
+                Support
+              </h4>
+
+              <ul className="mt-4 space-y-3 text-sm text-gray-500">
+
+                <li>
+                  <a href="#" className="hover:text-gray-900">
+                    Help Center
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" className="hover:text-gray-900">
+                    Shipping & Returns
+                  </a>
+                </li>
+
+                <li>
+                  <a href="#" className="hover:text-gray-900">
+                    Privacy Policy
+                  </a>
+                </li>
+
+              </ul>
+
+            </div>
+
+          </div>
+
+          {/* Bottom Footer */}
+          <div className="border-t border-gray-200 mt-12 pt-8 flex flex-col sm:flex-row justify-between gap-4">
+
+            <p className="text-xs text-gray-500">
+              © 2026 Style Switch. All rights reserved.
+            </p>
+
+            <div className="flex gap-5 text-xs text-gray-500">
+
+              <a href="#" className="hover:text-gray-900">
+                Instagram
+              </a>
+
+              <a href="#" className="hover:text-gray-900">
+                Facebook
+              </a>
+
+              <a href="#" className="hover:text-gray-900">
+                X
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+      </footer>
+      </>
   );
 };
 

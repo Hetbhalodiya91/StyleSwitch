@@ -1,0 +1,561 @@
+/* =========================================
+   BROWSE PAGE
+========================================= */
+
+.browse-page {
+  width: 100%;
+  min-height: 100vh;
+
+  background: #fafafa;
+
+  padding: 45px 50px 80px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.browse-header {
+  width: 100%;
+  max-width: 1450px;
+
+  margin: 0 auto 40px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-end;
+
+  gap: 40px;
+}
+
+.browse-label {
+  margin: 0 0 8px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 2px;
+
+  color: #777;
+}
+
+.browse-header h1 {
+  margin: 0;
+
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: 44px;
+
+  font-weight: 500;
+
+  color: #111;
+}
+
+.browse-description {
+  margin: 10px 0 0;
+
+  font-size: 14px;
+
+  color: #777;
+}
+
+
+/* =========================================
+   SEARCH
+========================================= */
+
+.search-box {
+  width: 310px;
+
+  height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 0 15px;
+
+  background: white;
+
+  border: 1px solid #ddd;
+
+  box-sizing: border-box;
+}
+
+.search-box span {
+  font-size: 23px;
+
+  color: #777;
+}
+
+.search-box input {
+  width: 100%;
+
+  border: none;
+
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   MAIN CONTENT
+========================================= */
+
+.browse-content {
+  width: 100%;
+
+  max-width: 1450px;
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns: 245px minmax(0, 1fr);
+
+  gap: 30px;
+
+  align-items: start;
+}
+
+
+/* =========================================
+   FILTER PANEL
+========================================= */
+
+.filter-sidebar {
+  width: 100%;
+
+  background: white;
+
+  border: 1px solid #dedede;
+
+  box-sizing: border-box;
+
+  padding: 22px;
+
+  /*
+     IMPORTANT
+     Filter stays beside the cards while scrolling.
+  */
+
+  position: sticky;
+
+  top: 0;
+
+  align-self: start;
+
+  z-index: 10;
+}
+
+
+/* =========================================
+   FILTER HEADING
+========================================= */
+
+.filter-heading {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.filter-heading h3 {
+  margin: 0;
+
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: 22px;
+
+  font-weight: 500;
+}
+
+.filter-heading button {
+  padding: 0;
+
+  border: none;
+
+  background: none;
+
+  color: #777;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  text-decoration: underline;
+}
+
+
+/* =========================================
+   FILTER GROUP
+========================================= */
+
+.filter-group {
+  padding: 19px 0;
+
+  border-bottom: 1px solid #eeeeee;
+}
+
+.filter-group:last-child {
+  border-bottom: none;
+}
+
+.filter-group h4 {
+  margin: 0 0 14px;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 1px;
+
+  color: #222;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================
+   RADIO OPTIONS
+========================================= */
+
+.filter-group label {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 12px;
+
+  font-size: 13px;
+
+  color: #666;
+
+  cursor: pointer;
+}
+
+.filter-group label:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group input[type="radio"] {
+  width: 17px;
+
+  height: 17px;
+
+  margin: 0;
+
+  accent-color: #111;
+
+  cursor: pointer;
+}
+
+
+/* =========================================
+   SIZE BUTTONS
+========================================= */
+
+.size-buttons {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.size-buttons button {
+  min-width: 38px;
+
+  height: 34px;
+
+  padding: 0 10px;
+
+  background: white;
+
+  border: 1px solid #d4d4d4;
+
+  color: #555;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.size-buttons button:hover {
+  border-color: #111;
+}
+
+.size-buttons .active-size {
+  background: #111;
+
+  border-color: #111;
+
+  color: white;
+}
+
+
+/* =========================================
+   PRICE
+========================================= */
+
+.price-range {
+  width: 100%;
+
+  margin: 5px 0;
+
+  accent-color: #111;
+
+  cursor: pointer;
+}
+
+.price-values {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-top: 7px;
+
+  font-size: 11px;
+
+  color: #777;
+}
+
+
+/* =========================================
+   PRODUCTS SECTION
+========================================= */
+
+.products-section {
+  width: 100%;
+
+  min-width: 0;
+}
+
+
+/* =========================================
+   TOP BAR
+========================================= */
+
+.products-topbar {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 20px;
+}
+
+.products-topbar p {
+  margin: 0;
+
+  font-size: 13px;
+
+  color: #777;
+}
+
+.products-topbar strong {
+  color: #111;
+}
+
+.products-topbar select {
+  width: 190px;
+
+  height: 42px;
+
+  padding: 0 12px;
+
+  background: white;
+
+  border: 1px solid #ddd;
+
+  outline: none;
+
+  color: #555;
+
+  cursor: pointer;
+}
+
+
+/* =========================================
+   CLOTH GRID
+========================================= */
+
+.browse-grid {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 24px;
+
+  align-items: start;
+}
+
+
+/* =========================================
+   CARD WRAPPER
+========================================= */
+
+.browse-grid > * {
+  width: 100%;
+
+  min-width: 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   NO RESULTS
+========================================= */
+
+.no-results {
+  width: 100%;
+
+  min-height: 400px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background: white;
+
+  border: 1px solid #eee;
+
+  text-align: center;
+}
+
+.no-results-icon {
+  font-size: 40px;
+
+  color: #999;
+}
+
+.no-results h2 {
+  margin: 15px 0 5px;
+
+  font-family: Georgia, serif;
+
+  font-weight: 500;
+}
+
+.no-results p {
+  margin: 0;
+
+  color: #777;
+
+  font-size: 14px;
+}
+
+.no-results button {
+  margin-top: 20px;
+
+  padding: 11px 22px;
+
+  border: none;
+
+  background: #111;
+
+  color: white;
+
+  cursor: pointer;
+}
+
+
+/* =========================================
+   LARGE TABLET
+========================================= */
+
+@media (max-width: 1200px) {
+
+  .browse-page {
+    padding: 40px 30px 70px;
+  }
+
+  .browse-content {
+    grid-template-columns:
+      220px minmax(0, 1fr);
+
+    gap: 25px;
+  }
+
+  .browse-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 750px) {
+
+  .browse-page {
+    padding: 30px 18px 60px;
+  }
+
+  .browse-header {
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 20px;
+  }
+
+  .browse-header h1 {
+    font-size: 34px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .browse-content {
+    grid-template-columns: 1fr;
+  }
+
+  /*
+     Disable sticky filter on mobile.
+  */
+
+  .filter-sidebar {
+    position: static;
+
+    width: 100%;
+  }
+
+  .browse-grid {
+    grid-template-columns: 1fr;
+  }
+}

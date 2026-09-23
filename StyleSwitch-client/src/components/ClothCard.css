@@ -1,0 +1,307 @@
+.cloth-card {
+  width: 100%;
+  max-width: 330px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e5e5;
+  border-radius: 2px;
+
+  overflow: hidden;
+
+  transition: all 0.35s ease;
+
+  cursor: pointer;
+}
+
+.cloth-card:hover {
+  transform: translateY(-6px);
+
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================
+   IMAGE
+========================= */
+
+.cloth-image-wrapper {
+  position: relative;
+
+  width: 100%;
+  height: 390px;
+
+  overflow: hidden;
+
+  background: #f5f5f5;
+}
+
+.cloth-image {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  display: block;
+
+  transition: transform 0.6s ease;
+}
+
+.cloth-card:hover .cloth-image {
+  transform: scale(1.05);
+}
+
+
+/* =========================
+   AVAILABLE BADGE
+========================= */
+
+.available-badge {
+  position: absolute;
+
+  top: 14px;
+  left: 14px;
+
+  padding: 6px 10px;
+
+  background: white;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+
+  color: #333;
+}
+
+
+/* =========================
+   WISHLIST
+========================= */
+
+.wishlist-btn {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 38px;
+  height: 38px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, 0.95);
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.wishlist-btn:hover {
+  background: #111;
+  color: white;
+
+  transform: scale(1.08);
+}
+
+
+/* =========================
+   DETAILS
+========================= */
+
+.cloth-details {
+  padding: 18px 18px 20px;
+}
+
+
+/* Brand + Category */
+
+.brand-category {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 7px;
+}
+
+.brand-category span:first-child {
+  font-size: 11px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.2px;
+
+  text-transform: uppercase;
+
+  color: #555;
+}
+
+.brand-category span:last-child {
+  font-size: 11px;
+
+  color: #999;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.8px;
+}
+
+
+/* Product Name */
+
+.cloth-details h3 {
+  margin: 0;
+
+  font-family: Georgia, "Times New Roman", serif;
+
+  font-size: 21px;
+
+  font-weight: 500;
+
+  color: #171717;
+}
+
+
+/* =========================
+   RATING
+========================= */
+
+.rating {
+  margin-top: 8px;
+
+  font-size: 13px;
+
+  color: #111;
+
+  letter-spacing: 1px;
+}
+
+.rating span {
+  color: #777;
+
+  letter-spacing: 0;
+}
+
+
+/* =========================
+   SIZE
+========================= */
+
+.size-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 15px;
+
+  font-size: 12px;
+
+  color: #777;
+}
+
+.sizes span {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  min-width: 34px;
+  height: 28px;
+
+  padding: 0 8px;
+
+  border: 1px solid #d5d5d5;
+
+  font-size: 12px;
+
+  color: #333;
+}
+
+
+/* =========================
+   PRICE
+========================= */
+
+.price-row {
+  margin-top: 17px;
+
+  padding-top: 15px;
+
+  border-top: 1px solid #eeeeee;
+}
+
+.price {
+  font-size: 20px;
+
+  font-weight: 600;
+
+  color: #111;
+}
+
+.per-day {
+  margin-left: 5px;
+
+  font-size: 12px;
+
+  color: #888;
+}
+
+
+/* =========================
+   RENT BUTTON
+========================= */
+
+.rent-button {
+  width: 100%;
+
+  margin-top: 17px;
+
+  padding: 12px 15px;
+
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  background: #111827;
+
+  border: 1px solid #111827;
+
+  color: white;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  letter-spacing: 1.5px;
+
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.rent-button span {
+  font-size: 18px;
+
+  transition: transform 0.3s ease;
+}
+
+.rent-button:hover {
+  background: white;
+
+  color: #111;
+
+  border-color: #111;
+}
+
+.rent-button:hover span {
+  transform: translateX(5px);
+}

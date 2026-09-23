@@ -1,12 +1,22 @@
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
+// import ClothCard from "./components/ClothCard";
+import ClothGrid from "./components/ClothGrid";
+import BrowsePage from "./pages/BrowsePage";
 
 function App() {
 
 
   return (
     <>
-      <LandingPage />
+      {/* <Navbar>
+        <LandingPage />
+      </Navbar>
+      <ClothGrid/> */}
+      <Navbar>
+        <BrowsePage/>
+      </Navbar>
+      
     </>
   )
 }
