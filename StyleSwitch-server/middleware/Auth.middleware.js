@@ -43,9 +43,19 @@ export const protect = async (req, res, next) => {
   }
 };
 
-export const authorize = (...roles) => async (req , res)=>{
-    if(!roles.includes(req.user.role)){
-        return res.status(403).json({message:"Access denied. You do not have permission to perform this action."});
+export const authorize = (...roles) => (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
     }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: "Access denied. You do not have permission to perform this action." });
+    }
+
     next();
-}
+  } catch (err) {
+    console.error("Authorize error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};

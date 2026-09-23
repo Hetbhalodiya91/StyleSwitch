@@ -32,7 +32,8 @@ const UserSchema = new mongoose.Schema({
     role:{
         type:String,
         enum:['admin','tenant','lender'],
-        default:'buyer'
+        required:'true',
+        default:'tenant'
     },
     isBlock :{
         type:Boolean,
