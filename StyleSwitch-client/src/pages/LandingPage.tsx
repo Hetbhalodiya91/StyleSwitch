@@ -1,4 +1,11 @@
 import React from 'react';
+import { ArrowRight, Check } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+interface LandingPageProps {
+  onBrowse?: () => void;
+  onSignup?: () => void;
+}
 
 interface ProductCard {
   id: number;
@@ -8,7 +15,7 @@ interface ProductCard {
   imageUrl: string;
 }
 
-const LandingPage: React.FC = () => {
+const LandingPage: React.FC<LandingPageProps> = ({ onBrowse, onSignup }) => {
 
   const featuredProducts: ProductCard[] = [
     {
@@ -46,7 +53,7 @@ const LandingPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-mono antialiased">
+    <motion.div className="landing-page" initial="hidden" animate="visible" variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}>
 
 
 
@@ -81,12 +88,12 @@ const LandingPage: React.FC = () => {
 
             <div className="pt-4 flex flex-col sm:flex-row gap-4">
 
-              <a
-                href="#collection"
+              <button
+                onClick={onBrowse}
                 className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3.5 rounded-md font-medium shadow-sm transition-all text-center"
               >
-                Explore Collection
-              </a>
+                Explore Collection <ArrowRight size={16} />
+              </button>
 
               <a
                 href="#how-it-works"
@@ -355,7 +362,7 @@ const LandingPage: React.FC = () => {
                 <div className="flex gap-4">
 
                   <div className="flex-shrink-0 w-10 h-10 bg-gray-900 text-white rounded-md flex items-center justify-center">
-                    ✓
+                    <Check size={16} />
                   </div>
 
                   <div>
@@ -447,7 +454,7 @@ const LandingPage: React.FC = () => {
               Explore Collection
             </a>
 
-            <button className="border border-gray-600 hover:border-white text-white px-8 py-3.5 rounded-md font-semibold transition-colors">
+            <button onClick={onSignup} className="border border-gray-600 hover:border-white text-white px-8 py-3.5 rounded-md font-semibold transition-colors">
               Create Account
             </button>
 
@@ -462,7 +469,7 @@ const LandingPage: React.FC = () => {
 
 
 
-    </div>
+    </motion.div>
   );
 };
 
