@@ -1,534 +1,321 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import ClothCard from "../components/ClothCard";
+import BookingModal from "../components/BookingModal";
+import { clothService, type ClothItem } from "../api/clothService";
 import "./BrowsePage.css";
 
-interface Cloth {
-  id: number;
-  image: string;
-  name: string;
-  brand: string;
-  category: string;
-  gender: string;
-  size: string;
-  price: number;
-  rating: number;
+interface BrowsePageProps {
+  onNavigate?: (page: string) => void;
+  onViewDetail?: (clothId: string) => void;
 }
 
-const clothes: Cloth[] = [
-  {
-    id: 1,
-    image: "/images/suit.jpg",
-    name: "RAA Classics",
-    brand: "RAA",
-    category: "Suit",
-    gender: "Men",
-    size: "L",
-    price: 2999,
-    rating: 4.8,
-  },
-  {
-    id: 2,
-    image: "/images/tuxedo.jpg",
-    name: "Royal Tuxedo",
-    brand: "Royal Wear",
-    category: "Tuxedo",
-    gender: "Men",
-    size: "M",
-    price: 3499,
-    rating: 4.7,
-  },
-  {
-    id: 3,
-    image: "/images/sherwani.jpg",
-    name: "Elegant Sherwani",
-    brand: "Ethnic House",
-    category: "Sherwani",
-    gender: "Men",
-    size: "XL",
-    price: 3999,
-    rating: 4.9,
-  },
-  {
-    id: 4,
-    image: "/images/black-suit.jpg",
-    name: "Classic Black",
-    brand: "Urban Style",
-    category: "Suit",
-    gender: "Men",
-    size: "M",
-    price: 2799,
-    rating: 4.6,
-  },
-  {
-    id: 5,
-    image: "/images/gown.jpg",
-    name: "Royal Evening Gown",
-    brand: "Aura",
-    category: "Gown",
-    gender: "Women",
-    size: "L",
-    price: 4499,
-    rating: 4.9,
-  },
-  {
-    id: 6,
-    image: "/images/lehenga.jpg",
-    name: "Bridal Lehenga",
-    brand: "Ethnic House",
-    category: "Lehenga",
-    gender: "Women",
-    size: "M",
-    price: 4999,
-    rating: 4.8,
-  },
-  {
-    id: 7,
-    image: "/images/dress.jpg",
-    name: "Elegant Dress",
-    brand: "Aura",
-    category: "Dress",
-    gender: "Women",
-    size: "S",
-    price: 2499,
-    rating: 4.5,
-  },
-  {
-    id: 8,
-    image: "/images/blazer.jpg",
-    name: "Premium Blazer",
-    brand: "Urban Style",
-    category: "Blazer",
-    gender: "Men",
-    size: "XL",
-    price: 3199,
-    rating: 4.7,
-  },
-];
+const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
+  const [clothes, setClothes] = useState<ClothItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-function BrowsePage() {
-  /* =========================
-     FILTER STATES
-  ========================= */
+  // Booking modal state
+  const [selectedClothForBooking, setSelectedClothForBooking] = useState<ClothItem | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
+  // Filters
   const [search, setSearch] = useState("");
-
   const [gender, setGender] = useState("All");
-
   const [category, setCategory] = useState("All");
-
   const [size, setSize] = useState("All");
-
-  const [maxPrice, setMaxPrice] = useState(5000);
-
+  const [maxPrice, setMaxPrice] = useState(15000);
   const [sort, setSort] = useState("default");
 
+  useEffect(() => {
+    fetchClothes();
+  }, []);
 
-  /* =========================
-     FILTER + SORT
-  ========================= */
-
-  const filteredClothes = useMemo(() => {
-    let result = clothes.filter((cloth) => {
-
-      const matchesSearch =
-        cloth.name
-          .toLowerCase()
-          .includes(search.toLowerCase()) ||
-        cloth.brand
-          .toLowerCase()
-          .includes(search.toLowerCase());
-
-      const matchesGender =
-        gender === "All" ||
-        cloth.gender === gender;
-
-      const matchesCategory =
-        category === "All" ||
-        cloth.category === category;
-
-      const matchesSize =
-        size === "All" ||
-        cloth.size === size;
-
-      const matchesPrice =
-        cloth.price <= maxPrice;
-
-      return (
-        matchesSearch &&
-        matchesGender &&
-        matchesCategory &&
-        matchesSize &&
-        matchesPrice
+  const fetchClothes = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await clothService.getAll();
+      setClothes(response.clothes || []);
+    } catch (err) {
+      console.error("Error fetching clothes from backend:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load clothing items from the server."
       );
-    });
-
-
-    /* Sorting */
-
-    if (sort === "price-low") {
-      result.sort((a, b) => a.price - b.price);
+      setClothes([]);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (sort === "price-high") {
-      result.sort((a, b) => b.price - a.price);
-    }
-
-    if (sort === "rating") {
-      result.sort((a, b) => b.rating - a.rating);
-    }
-
-
-    return result;
-
-  }, [
-    search,
-    gender,
-    category,
-    size,
-    maxPrice,
-    sort,
-  ]);
-
-
-  /* =========================
-     CLEAR FILTERS
-  ========================= */
+  };
 
   const clearFilters = () => {
     setSearch("");
     setGender("All");
     setCategory("All");
     setSize("All");
-    setMaxPrice(5000);
+    setMaxPrice(15000);
     setSort("default");
   };
 
+  const filteredClothes = useMemo(() => {
+    return clothes
+      .filter((item) => {
+        const matchesSearch =
+          search === "" ||
+          item.brand?.toLowerCase().includes(search.toLowerCase()) ||
+          item.category?.toLowerCase().includes(search.toLowerCase()) ||
+          (item.description &&
+            item.description.toLowerCase().includes(search.toLowerCase())) ||
+          (item.color &&
+            item.color.toLowerCase().includes(search.toLowerCase()));
+
+        const matchesGender =
+          gender === "All" ||
+          item.gender?.toLowerCase() === gender.toLowerCase();
+
+        const matchesCategory =
+          category === "All" ||
+          item.category?.toLowerCase() === category.toLowerCase();
+
+        const matchesSize = size === "All" || item.size === size;
+
+        const matchesPrice = item.rentalPricePerDay <= maxPrice;
+
+        return (
+          matchesSearch &&
+          matchesGender &&
+          matchesCategory &&
+          matchesSize &&
+          matchesPrice
+        );
+      })
+      .sort((a, b) => {
+        if (sort === "price-low") return a.rentalPricePerDay - b.rentalPricePerDay;
+        if (sort === "price-high") return b.rentalPricePerDay - a.rentalPricePerDay;
+        return 0;
+      });
+  }, [clothes, search, gender, category, size, maxPrice, sort]);
 
   return (
     <div className="browse-page">
-
-      {/* =========================
-          HEADER
-      ========================= */}
-
-      <div className="browse-header">
-
-        <div>
-          <p className="browse-label">
-            STYLE SWITCH
+      {/* HERO SECTION */}
+      <div className="browse-hero">
+        <div className="browse-hero-content">
+          <span className="browse-badge">THE ROTATION COLLECTION</span>
+          <h1>Explore The Wardrobe</h1>
+          <p>
+            Rent high-end luxury, occasion wear, and designer looks directly
+            from mindful collectors.
           </p>
-
-          <h1>
-            Browse Collection
-          </h1>
-
-          <p className="browse-description">
-            Discover outfits for every occasion.
-          </p>
-        </div>
-
-
-        {/* SEARCH */}
-
-        <div className="search-box">
-
-          <span>⌕</span>
 
           <input
+            className="search-input"
             type="text"
-            placeholder="Search clothes..."
+            placeholder="Search by designer, outfit style, occasion, or color..."
             value={search}
-            onChange={(e) =>
-              setSearch(e.target.value)
-            }
+            onChange={(e) => setSearch(e.target.value)}
           />
-
         </div>
-
       </div>
 
-
-      {/* =========================
-          MAIN CONTENT
-      ========================= */}
-
+      {/* MAIN CONTENT */}
       <div className="browse-content">
-
-
-        {/* =========================
-            FILTER SIDEBAR
-        ========================= */}
-
+        {/* FILTER SIDEBAR */}
         <aside className="filter-sidebar">
-
           <div className="filter-heading">
-
-            <h3>
-              Filters
-            </h3>
-
-            <button onClick={clearFilters}>
-              Clear All
-            </button>
-
+            <h3>Filters</h3>
+            <button onClick={clearFilters}>Clear All</button>
           </div>
-
 
           {/* GENDER */}
-
           <div className="filter-group">
-
-            <h4>
-              Gender
-            </h4>
-
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                checked={gender === "All"}
-                onChange={() => setGender("All")}
-              />
-              All
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                checked={gender === "Men"}
-                onChange={() => setGender("Men")}
-              />
-              Men
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="gender"
-                checked={gender === "Women"}
-                onChange={() => setGender("Women")}
-              />
-              Women
-            </label>
-
+            <h4>Gender</h4>
+            {["All", "Men", "Women", "Unisex"].map((g) => (
+              <label key={g}>
+                <input
+                  type="radio"
+                  name="gender"
+                  checked={gender === g}
+                  onChange={() => setGender(g)}
+                />
+                {g}
+              </label>
+            ))}
           </div>
 
-
           {/* CATEGORY */}
-
           <div className="filter-group">
-
-            <h4>
-              Category
-            </h4>
-
+            <h4>Category</h4>
             {[
               "All",
               "Suit",
               "Tuxedo",
               "Sherwani",
               "Gown",
-              "Lehenga",
-              "Dress",
+              "Bridal Lehenga",
+              "Designer Lehenga",
               "Blazer",
+              "Indowestern Men",
+              "Indowestern Women",
             ].map((item) => (
-
               <label key={item}>
-
                 <input
                   type="radio"
                   name="category"
                   checked={category === item}
-                  onChange={() =>
-                    setCategory(item)
-                  }
+                  onChange={() => setCategory(item)}
                 />
-
                 {item}
-
               </label>
-
             ))}
-
           </div>
-
 
           {/* SIZE */}
-
           <div className="filter-group">
-
-            <h4>
-              Size
-            </h4>
-
+            <h4>Size</h4>
             <div className="size-buttons">
-
-              {["All", "S", "M", "L", "XL"].map(
-                (item) => (
-
-                  <button
-                    key={item}
-                    className={
-                      size === item
-                        ? "active-size"
-                        : ""
-                    }
-                    onClick={() =>
-                      setSize(item)
-                    }
-                  >
-                    {item}
-                  </button>
-
-                )
-              )}
-
+              {["All", "XS", "S", "M", "L", "XL", "2XL"].map((item) => (
+                <button
+                  key={item}
+                  className={size === item ? "active-size" : ""}
+                  onClick={() => setSize(item)}
+                >
+                  {item}
+                </button>
+              ))}
             </div>
-
           </div>
 
-
           {/* PRICE */}
-
           <div className="filter-group">
-
-            <h4>
-              Maximum Price
-            </h4>
-
+            <h4>Maximum Price</h4>
             <input
               className="price-range"
               type="range"
-              min="1000"
-              max="5000"
-              step="100"
+              min="500"
+              max="15000"
+              step="250"
               value={maxPrice}
-              onChange={(e) =>
-                setMaxPrice(
-                  Number(e.target.value)
-                )
-              }
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
             />
-
             <div className="price-values">
-
-              <span>
-                ₹1,000
-              </span>
-
-              <span>
-                ₹{maxPrice}
-              </span>
-
+              <span>₹500</span>
+              <span>₹{maxPrice.toLocaleString("en-IN")}</span>
             </div>
-
           </div>
-
         </aside>
 
-
-        {/* =========================
-            PRODUCTS
-        ========================= */}
-
+        {/* PRODUCTS SECTION */}
         <main className="products-section">
-
-
-          {/* PRODUCT TOP BAR */}
-
           <div className="products-topbar">
+            <div>
+              <p>
+                <strong>{filteredClothes.length}</strong> outfits found
+              </p>
+            </div>
 
-            <p>
-              <strong>
-                {filteredClothes.length}
-              </strong>{" "}
-              outfits found
-            </p>
-
-
-            <select
-              value={sort}
-              onChange={(e) =>
-                setSort(e.target.value)
-              }
-            >
-
-              <option value="default">
-                Sort By
-              </option>
-
-              <option value="price-low">
-                Price: Low to High
-              </option>
-
-              <option value="price-high">
-                Price: High to Low
-              </option>
-
-              <option value="rating">
-                Highest Rated
-              </option>
-
+            <select value={sort} onChange={(e) => setSort(e.target.value)}>
+              <option value="default">Sort By</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
             </select>
-
           </div>
 
+          {error && (
+            <div
+              style={{
+                padding: "16px",
+                marginBottom: "20px",
+                borderRadius: "8px",
+                backgroundColor: "#fef2f2",
+                border: "1px solid #fee2e2",
+                color: "#991b1b",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <span>{error}</span>
+              <button
+                onClick={fetchClothes}
+                style={{
+                  padding: "6px 12px",
+                  backgroundColor: "#991b1b",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
-          {/* CARDS */}
-
-          {filteredClothes.length > 0 ? (
-
+          {isLoading ? (
+            <div style={{ textAlign: "center", padding: "80px 20px" }}>
+              <p style={{ color: "#666", fontSize: "16px" }}>
+                Loading clothes from backend...
+              </p>
+            </div>
+          ) : filteredClothes.length > 0 ? (
             <div className="browse-grid">
-
               {filteredClothes.map((cloth) => (
-
                 <ClothCard
-                  key={cloth.id}
-                  image={cloth.image}
-                  name={cloth.name}
+                  key={cloth._id}
+                  image={cloth.images?.[0]}
+                  name={cloth.description || `${cloth.brand} ${cloth.category}`}
                   brand={cloth.brand}
                   category={cloth.category}
                   size={cloth.size}
-                  price={cloth.price}
-                  rating={cloth.rating}
+                  price={cloth.rentalPricePerDay}
+                  rating={4.8}
+                  onViewDetail={() => onViewDetail?.(cloth._id)}
+                  onRent={() => onViewDetail?.(cloth._id)}
                 />
-
               ))}
-
             </div>
-
-          ) : (
-
+          ) : clothes.length === 0 ? (
             <div className="no-results">
-
-              <div className="no-results-icon">
-                ♡
-              </div>
-
-              <h2>
-                No outfits found
-              </h2>
-
+              <div className="no-results-icon">✦</div>
+              <h2>No clothes listed yet</h2>
               <p>
-                Try changing your filters
-                or search something else.
+                The wardrobe database is currently empty. Be the first to list a
+                piece from your collection!
               </p>
-
-              <button onClick={clearFilters}>
-                Clear Filters
-              </button>
-
+              {onNavigate && (
+                <button
+                  onClick={() => onNavigate("add")}
+                  style={{ marginTop: "12px" }}
+                >
+                  List a Piece Now
+                </button>
+              )}
             </div>
-
+          ) : (
+            <div className="no-results">
+              <div className="no-results-icon">♡</div>
+              <h2>No matching outfits</h2>
+              <p>Try adjusting your search query or filter options.</p>
+              <button onClick={clearFilters}>Clear Filters</button>
+            </div>
           )}
-
         </main>
-
       </div>
 
+      {/* Booking & Date Picker Modal */}
+      <BookingModal
+        cloth={selectedClothForBooking}
+        isOpen={isBookingModalOpen}
+        onClose={() => {
+          setIsBookingModalOpen(false);
+          setSelectedClothForBooking(null);
+        }}
+        onNavigate={onNavigate}
+      />
     </div>
   );
-}
+};
 
 export default BrowsePage;

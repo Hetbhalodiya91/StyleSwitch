@@ -1,4 +1,3 @@
-
 import User from "../model/User.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -8,14 +7,24 @@ import crypto from "crypto";
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
-    if (!name || !email || !password) {
+    if (!name?.trim() || !normalizedEmail || !password) {
       return res.status(400).json({
         message: "Name, email and password are required",
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character",
+      });
+    }
+
+    const existingUser = await User.findOne({ email: normalizedEmail });
 
     if (existingUser) {
       return res.status(400).json({
@@ -30,8 +39,8 @@ export const register = async (req, res) => {
     ).toString();
 
     const user = new User({
-      name,
-      email,
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword,
       role,
       isApproved: role === "seller" ? false : true,
@@ -51,9 +60,8 @@ export const register = async (req, res) => {
   } catch (err) {
     console.error("Register error:", err);
 
-    return res.status(500).json({
-      message: "Server error",
-      error: err.message,
+    return res.status(err.name === "ValidationError" ? 400 : 500).json({
+      message: err.name === "ValidationError" ? err.message : "Server error",
     });
   }
 };
@@ -61,14 +69,15 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email?.trim().toLowerCase();
 
-    if (!email || !password) {
+    if (!normalizedEmail || !password) {
       return res.status(400).json({
         message: "Email and password are required",
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
       return res.status(404).json({

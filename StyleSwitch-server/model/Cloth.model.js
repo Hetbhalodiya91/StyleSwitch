@@ -133,6 +133,11 @@ const ClothSchema = new mongoose.Schema(
             trim: true,
             match: [/^[1-9][0-9]{5}$/, "Please enter a valid 6-digit pincode"],
         },
+
+        isAvailable: {
+            type: Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,

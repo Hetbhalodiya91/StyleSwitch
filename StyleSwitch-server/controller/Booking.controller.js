@@ -78,6 +78,28 @@ export const getBookingById = async (req, res) => {
   }
 };
 
+// PUBLIC — returns all booked date ranges for a cloth so the calendar can disable them
+export const getClothAvailability = async (req, res) => {
+  try {
+    const { clothId } = req.params;
+    const bookings = await Booking.find({
+      clothId,
+      status: { $in: ["PENDING", "CONFIRMED"] },
+    }).select("startDate endDate status -_id");
+
+    const bookedRanges = bookings.map((b) => ({
+      startDate: b.startDate,
+      endDate: b.endDate,
+      status: b.status,
+    }));
+
+    return res.status(200).json({ success: true, bookedRanges });
+  } catch (err) {
+    console.error("Get cloth availability error:", err);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;

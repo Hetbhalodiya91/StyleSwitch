@@ -1,79 +1,58 @@
+import React from "react";
 import ClothCard from "./ClothCard";
+import type { ClothItem } from "../api/clothService";
 import "./ClothGrid.css";
 
-const clothes = [
-  {
-    image: "/images/suit.jpg",
-    name: "RAA Classics",
-    brand: "RAA",
-    category: "Sherwani",
-    size: "L",
-    price: 2999,
-    rating: 4.8,
-  },
-  {
-    image: "/images/tuxedo.jpg",
-    name: "Royal Tuxedo",
-    brand: "Royal Wear",
-    category: "Tuxedo",
-    size: "M",
-    price: 3499,
-    rating: 4.7,
-  },
-  {
-    image: "/images/sherwani.jpg",
-    name: "Elegant Sherwani",
-    brand: "Ethnic House",
-    category: "Sherwani",
-    size: "XL",
-    price: 3999,
-    rating: 4.9,
-  },
-  {
-    image: "/images/black-suit.jpg",
-    name: "Classic Black",
-    brand: "Urban Style",
-    category: "Suit",
-    size: "M",
-    price: 2799,
-    rating: 4.6,
-  },
-];
+interface ClothGridProps {
+  clothes?: ClothItem[];
+  title?: string;
+  onViewAll?: () => void;
+  onSelect?: (cloth: ClothItem) => void;
+}
 
-function ClothGrid() {
+const ClothGrid: React.FC<ClothGridProps> = ({
+  clothes = [],
+  title = "Find Your Style",
+  onViewAll,
+  onSelect,
+}) => {
   return (
     <section className="clothes-section">
-
       <div className="section-header">
         <div>
-          <p className="section-label">
-            OUR COLLECTION
-          </p>
-
-          <h2>
-            Find Your Style
-          </h2>
+          <p className="section-label">OUR COLLECTION</p>
+          <h2>{title}</h2>
         </div>
 
-        <button className="view-all">
-          VIEW ALL →
-        </button>
+        {onViewAll && (
+          <button className="view-all" onClick={onViewAll}>
+            VIEW ALL →
+          </button>
+        )}
       </div>
 
-
-      <div className="cloth-grid">
-
-        {clothes.map((cloth, index) => (
-          <ClothCard
-            key={index}
-            {...cloth}
-          />
-        ))}
-
-      </div>
-
+      {clothes.length > 0 ? (
+        <div className="cloth-grid">
+          {clothes.map((cloth) => (
+            <ClothCard
+              key={cloth._id}
+              image={cloth.images?.[0]}
+              name={cloth.description || `${cloth.brand} ${cloth.category}`}
+              brand={cloth.brand}
+              category={cloth.category}
+              size={cloth.size}
+              price={cloth.rentalPricePerDay}
+              onRent={() => onSelect?.(cloth)}
+            />
+          ))}
+        </div>
+      ) : (
+        <p style={{ textAlign: "center", color: "#888", padding: "40px 0" }}>
+          No clothing items to display.
+        </p>
+      )}
     </section>
   );
-}
+};
 
 export default ClothGrid;

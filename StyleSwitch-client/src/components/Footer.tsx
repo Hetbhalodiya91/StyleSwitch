@@ -1,5 +1,3 @@
-import { ArrowUpRight } from "lucide-react";
-
 interface FooterProps {
   onNavigate: (page: string) => void;
 }

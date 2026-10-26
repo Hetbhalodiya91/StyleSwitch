@@ -17,12 +17,6 @@ const UserSchema = new mongoose.Schema({
         type:String ,
         required:true,
         minlength:[8,"Password must be at least 8 characters long"],
-        validate:{
-            validator:function(value){
-                return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(value);
-            },message:"Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character",
-        },
-        
     },
     number:{
         type:String,
@@ -31,8 +25,8 @@ const UserSchema = new mongoose.Schema({
     },
     role:{
         type:String,
-        enum:['admin','tenant','lender'],
-        required:'true',
+        enum:['admin','tenant','renter','lender'],
+        required:true,
         default:'tenant'
     },
     isBlock :{
@@ -44,7 +38,8 @@ const UserSchema = new mongoose.Schema({
     },
     resetPasswordToken:{
         type:String
-    },resetPasswordExpire: {
+    },
+    resetPasswordExpire: {
         type: Date
     }
 },{

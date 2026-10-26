@@ -11,22 +11,74 @@ import {
   UserRound,
 } from "lucide-react";
 import "./AuthPage.css";
+import { useAuth } from "../context/AuthContext";
 
 type AuthMode = "login" | "signup";
 
 interface AuthPageProps {
   mode: AuthMode;
   onSwitch: () => void;
+  onSuccess?: () => void;
 }
 
-const AuthPage = ({ mode, onSwitch }: AuthPageProps) => {
+const AuthPage = ({ mode, onSwitch, onSuccess }: AuthPageProps) => {
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const isSignup = mode === "signup";
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    setErrorMessage("");
+
+    const formData = new FormData(event.currentTarget);
+    const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
+    const endpoint = isSignup ? "/api/auth/register" : "/api/auth/login";
+    const body = isSignup
+      ? {
+          name: formData.get("name"),
+          email: formData.get("email"),
+          password: formData.get("password"),
+          role: "tenant",
+        }
+      : {
+          email: formData.get("email"),
+          password: formData.get("password"),
+        };
+
+    try {
+      const response = await fetch(`${apiUrl}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to complete this request");
+      }
+
+      if (data.token && data.user) {
+        login(data.token, data.user);
+      }
+
+      setSubmitted(true);
+      if (onSuccess) {
+        setTimeout(() => onSuccess(), 1000);
+      }
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Unable to connect to the server",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,78 +104,109 @@ const AuthPage = ({ mode, onSwitch }: AuthPageProps) => {
             <Sparkles size={14} /> STYLE, ON ROTATION
           </span>
           <h1>
-            Dress for the
+            Dress for the moments.
             <br />
-            <em>version of you</em>
-            <br />
-            that shows up.
+            Return when you&apos;re done.
           </h1>
-          <p>Curated pieces. More possibilities. Less closet clutter.</p>
+          <p>
+            Access luxury designer wardrobes across the country, reduce fashion
+            waste, and earn on what hangs in your closet.
+          </p>
         </motion.div>
       </motion.div>
+
       <motion.section
-        className="auth-panel"
-        initial={{ opacity: 0, x: 32 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.6, delay: 0.15 }}
+        className="auth-form-wrap"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
       >
-        <div className="auth-panel-inner">
-          <div className="auth-kicker">
-            STYLE/SWITCH <span>04</span>
-          </div>
+        <div className="auth-card">
+          <header className="auth-header">
+            <span className="auth-badge">Style Switch Access</span>
+            <h2>{isSignup ? "Create your account" : "Welcome back"}</h2>
+            <p>
+              {isSignup
+                ? "Join the community of mindful collectors and lenders."
+                : "Enter your credentials to manage your pieces and rentals."}
+            </p>
+          </header>
+
           <AnimatePresence mode="wait">
             <motion.div
               key={mode}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
+              initial={{ opacity: 0, x: isSignup ? 20 : -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: isSignup ? -20 : 20 }}
               transition={{ duration: 0.25 }}
             >
-              <h2>{isSignup ? "Make room for more" : "Welcome back"}</h2>
-              <p className="auth-intro">
-                {isSignup
-                  ? "Create an account and start your next rotation."
-                  : "Your wardrobe has been waiting for you."}
-              </p>
               {submitted ? (
                 <div className="auth-success">
-                  {isSignup
-                    ? "Account ready for your first switch."
-                    : "You are all set. Welcome back to your rotation."}
+                  <h3>
+                    {isSignup
+                      ? "Account created successfully!"
+                      : "Welcome back!"}
+                  </h3>
+                  <p>
+                    {isSignup
+                      ? "You can now log in and explore the full wardrobe collection."
+                      : "Redirecting you to the marketplace..."}
+                  </p>
+                  <button
+                    className="auth-submit"
+                    onClick={() => {
+                      setSubmitted(false);
+                      if (isSignup) onSwitch();
+                      else if (onSuccess) onSuccess();
+                    }}
+                  >
+                    {isSignup ? "Proceed to Login" : "Continue to Wardrobe"}
+                  </button>
                 </div>
               ) : (
                 <form className="auth-form" onSubmit={handleSubmit}>
+                  {errorMessage && (
+                    <div className="auth-error">{errorMessage}</div>
+                  )}
+
                   {isSignup && (
-                    <label>
-                      <span>Name</span>
+                    <label className="form-field">
+                      <span>Full Name</span>
                       <div className="input-wrap">
                         <UserRound size={17} />
-                        <input required name="name" placeholder="Your name" />
+                        <input
+                          required
+                          type="text"
+                          name="name"
+                          placeholder="e.g. Maya Chen"
+                        />
                       </div>
                     </label>
                   )}
-                  <label>
-                    <span>Email address</span>
+
+                  <label className="form-field">
+                    <span>Email Address</span>
                     <div className="input-wrap">
                       <Mail size={17} />
                       <input
                         required
                         type="email"
                         name="email"
-                        placeholder="you@example.com"
+                        placeholder="you@domain.com"
                       />
                     </div>
                   </label>
-                  <label>
+
+                  <label className="form-field">
                     <span>Password</span>
                     <div className="input-wrap">
                       <LockKeyhole size={17} />
                       <input
                         required
-                        minLength={6}
+                        pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}"
                         type={showPassword ? "text" : "password"}
                         name="password"
-                        placeholder="At least 6 characters"
+                        placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol"
                       />
                       <button
                         type="button"
@@ -151,7 +234,11 @@ const AuthPage = ({ mode, onSwitch }: AuthPageProps) => {
                     </button>
                   )}
                   <button className="auth-submit" type="submit">
-                    {isSignup ? "Create my account" : "Enter Style Switch"}
+                    {isSubmitting
+                      ? "Connecting..."
+                      : isSignup
+                        ? "Create my account"
+                        : "Enter Style Switch"}
                     <ArrowRight size={17} />
                   </button>
                 </form>

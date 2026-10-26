@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Cloth from "../model/Cloth.model.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 /**
  * Add new clothing
@@ -84,6 +85,15 @@ export const addCloth = async (req, res) => {
         }
 
         // Create clothing
+        // Upload images to Cloudinary
+        const uploadedImages = await Promise.all(
+            images.map((img) => uploadToCloudinary(img, "styleswitch_clothes"))
+        );
+        let uploadedBillPhoto = billPhoto;
+        if (billPhoto) {
+            uploadedBillPhoto = await uploadToCloudinary(billPhoto, "styleswitch_bills");
+        }
+
         const cloth = await Cloth.create({
             lenderId: req.user.id,
             brand: brand.trim(),
@@ -95,11 +105,11 @@ export const addCloth = async (req, res) => {
             purchaseDate,
             condition,
             conditionDescription: conditionDescription?.trim(),
-            images,
+            images: uploadedImages,
             rentalPricePerDay: Number(rentalPricePerDay),
             securityDeposit: Number(securityDeposit || 0),
             doesBill,
-            billPhoto,
+            billPhoto: uploadedBillPhoto,
             pickupAddress: pickupAddress.trim(),
             city: city.trim(),
             pincode: String(pincode).trim(),
