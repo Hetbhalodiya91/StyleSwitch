@@ -1,5 +1,13 @@
 import mongoose from "mongoose";
 
+export const PAYMENT_METHODS = [
+    "CARD",
+    "UPI",
+    "NETBANKING",
+    "WALLET",
+    "OTHER",
+];
+
 const PaymentSchema = new mongoose.Schema(
     {
         bookingId: {
@@ -38,25 +46,13 @@ const PaymentSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: [
-                "CREATED",
-                "PENDING",
-                "SUCCESS",
-                "FAILED",
-                "REFUNDED",
-            ],
+            enum: ["CREATED", "PENDING", "SUCCESS", "FAILED", "REFUNDED"],
             default: "CREATED",
         },
 
         paymentMethod: {
             type: String,
-            enum: [
-                "CARD",
-                "UPI",
-                "NETBANKING",
-                "WALLET",
-                "OTHER",
-            ],
+            enum: PAYMENT_METHODS,
             default: "OTHER",
         },
 
@@ -64,8 +60,18 @@ const PaymentSchema = new mongoose.Schema(
             type: Date,
             default: null,
         },
+
         // Refund fields
         refundId: {
+            type: String,
+            default: null,
+        },
+        refundStatus: {
+            type: String,
+            enum: ["NONE", "PENDING", "REFUNDED", "FAILED"],
+            default: "NONE",
+        },
+        refundReason: {
             type: String,
             default: null,
         },

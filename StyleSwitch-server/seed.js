@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import "dotenv/config";
+import "./config/loadEnv.js";
 import bcrypt from "bcrypt";
 import User from "./model/User.model.js";
 import Cloth from "./model/Cloth.model.js";

@@ -1,4 +1,5 @@
-import Payment from "../model/Payment.model.js";
+import "../config/loadEnv.js";
+import Payment, { PAYMENT_METHODS } from "../model/Payment.model.js";
 import Booking from "../model/Booking.model.js";
 import Notification from "../model/Notification.model.js";
 import crypto from "crypto";
@@ -9,9 +10,15 @@ import Razorpay from "razorpay";
  */
 export const createOrder = async (req, res) => {
   try {
-    const { bookingId } = req.body;
+    const { bookingId, paymentMethod = "OTHER" } = req.body;
     if (!bookingId) {
       return res.status(400).json({ success: false, message: "bookingId is required" });
+    }
+    if (!PAYMENT_METHODS.includes(paymentMethod)) {
+      return res.status(400).json({
+        success: false,
+        message: `paymentMethod must be one of: ${PAYMENT_METHODS.join(", ")}`,
+      });
     }
 
     const booking = await Booking.findById(bookingId).populate("clothId");
@@ -22,8 +29,8 @@ export const createOrder = async (req, res) => {
     const totalToPay = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
 
     let orderId = `order_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    const keyId = process.env.RAZORPAY_KEY_ID;
-    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    const keyId = process.env.RAZORPAY_KEY_ID?.trim();
+    const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
     // If active live or test keys are provided
     if (keyId && keySecret && !keyId.includes("your_razorpay")) {
@@ -36,7 +43,19 @@ export const createOrder = async (req, res) => {
         });
         orderId = rzpOrder.id;
       } catch (rzpErr) {
-        console.warn("Razorpay API order creation failed, falling back to simulated order:", rzpErr.message);
+        const statusCode = rzpErr.statusCode || 502;
+        const razorpayError = rzpErr.error || {};
+        const isAuthenticationError = statusCode === 401;
+        const message = isAuthenticationError
+          ? "Razorpay authentication failed. Check that the key ID and secret are a matching, active pair from the same account and mode."
+          : "Razorpay could not create the order. Please try again.";
+
+        console.error("Razorpay order creation failed:", {
+          statusCode,
+          code: razorpayError.code,
+          description: razorpayError.description,
+        });
+        return res.status(502).json({ success: false, message });
       }
     }
 
@@ -45,7 +64,7 @@ export const createOrder = async (req, res) => {
       tenantId: req.user._id,
       amount: totalToPay,
       razorpayOrderId: orderId,
-      paymentMethod: "RAZORPAY",
+      paymentMethod,
       status: "CREATED",
     });
 

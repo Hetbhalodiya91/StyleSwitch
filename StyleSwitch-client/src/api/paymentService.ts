@@ -36,9 +36,11 @@ export interface ConfirmPaymentResponse {
   };
 }
 
+export type PaymentMethod = "CARD" | "UPI" | "NETBANKING" | "WALLET" | "OTHER";
+
 export const paymentService = {
-  createOrder: (bookingId: string) =>
-    api.post<CreateOrderResponse>("/api/payments/create-order", { bookingId }),
+  createOrder: (bookingId: string, paymentMethod: PaymentMethod) =>
+    api.post<CreateOrderResponse>("/api/payments/create-order", { bookingId, paymentMethod }),
 
   confirmPayment: (paymentId: string, data: { razorpayPaymentId: string; razorpaySignature?: string }) =>
     api.post<ConfirmPaymentResponse>(`/api/payments/${paymentId}/confirm`, data),

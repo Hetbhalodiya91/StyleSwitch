@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ShieldCheck,
   CreditCard,
@@ -12,6 +12,14 @@ import {
 } from "lucide-react";
 import { paymentService } from "../api/paymentService";
 import "./CheckoutModal.css";
+
+// Extend Window to include Razorpay
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Razorpay: any;
+  }
+}
 
 interface CheckoutModalProps {
   booking: {
@@ -31,10 +39,23 @@ interface CheckoutModalProps {
   onSuccess: () => void;
 }
 
+/** Dynamically load the Razorpay checkout script once */
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutModalProps) {
   const [step, setStep] = useState<"review" | "processing" | "confirmed">("review");
   const [paymentMethod, setPaymentMethod] = useState<"card" | "upi" | "netbanking">("card");
   const [error, setError] = useState<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
   const [receiptData, setReceiptData] = useState<{
     paymentId: string;
     orderId: string;
@@ -48,43 +69,167 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
       (1000 * 60 * 60 * 24)
   );
 
+  // Pre-load Razorpay script on mount
+  useEffect(() => {
+    loadRazorpayScript().then(setScriptReady);
+  }, []);
+
   const handlePay = async () => {
     try {
       setStep("processing");
       setError(null);
 
-      // 1. Create order on server
-      const orderRes = await paymentService.createOrder(booking._id);
-      const { id: orderId, paymentId } = orderRes.order;
+      // 1. Create Razorpay order on our server
+      const selectedPaymentMethod = ({
+        card: "CARD",
+        upi: "UPI",
+        netbanking: "NETBANKING",
+      } as const)[paymentMethod];
 
-      // 2. Simulate / process payment confirmation
-      // Simulates real payment latency for authentic feedback
-      await new Promise((r) => setTimeout(r, 1200));
+      const orderRes = await paymentService.createOrder(booking._id, selectedPaymentMethod);
+      const { id: rzpOrderId, amount, key: rzpKey, paymentId } = orderRes.order;
 
-      const confirmRes = await paymentService.confirmPayment(paymentId, {
-        razorpayPaymentId: `pay_${Date.now()}_simulated`,
-        razorpaySignature: "sig_verified_styleswitch",
-      });
+      // 2. Check if real Razorpay key is present and script loaded
+      const isRealKey = rzpKey && !rzpKey.includes("styleswitch") && !rzpKey.includes("test_fake");
 
-      setReceiptData({
-        paymentId: confirmRes.payment.razorpayPaymentId,
-        orderId,
-        amount: confirmRes.payment.amount,
-        date: new Date().toLocaleDateString("en-IN", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      });
-
-      setStep("confirmed");
+      if (isRealKey && scriptReady && window.Razorpay) {
+        // ── REAL RAZORPAY CHECKOUT ──────────────────────────────────────────
+        await openRazorpayPopup({
+          key: rzpKey,
+          orderId: rzpOrderId,
+          amount,
+          paymentId,
+          paymentMethod,
+        });
+      } else {
+        // ── FALLBACK: simulated checkout (dev / missing keys) ───────────────
+        await new Promise((r) => setTimeout(r, 1200));
+        await handlePaymentSuccess({
+          razorpayPaymentId: `pay_${Date.now()}_simulated`,
+          razorpayOrderId: rzpOrderId,
+          razorpaySignature: "simulated_signature",
+          paymentId,
+          amount,
+          orderId: rzpOrderId,
+        });
+      }
     } catch (err: unknown) {
       console.error("Payment failed:", err);
       setError(err instanceof Error ? err.message : "Payment processing failed. Please try again.");
       setStep("review");
     }
+  };
+
+  /** Open Razorpay popup and await user action */
+  const openRazorpayPopup = ({
+    key,
+    orderId,
+    amount,
+    paymentId,
+    paymentMethod: method,
+  }: {
+    key: string;
+    orderId: string;
+    amount: number;
+    paymentId: string;
+    paymentMethod: "card" | "upi" | "netbanking";
+  }): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const rzpMethodMap: Record<string, string> = {
+        card: "card",
+        upi: "upi",
+        netbanking: "netbanking",
+      };
+
+      const options = {
+        key,
+        amount: Math.round(amount * 100), // paise
+        currency: "INR",
+        name: "StyleSwitch",
+        description: `${booking.clothId.brand} — ${booking.clothId.category}`,
+        image: booking.clothId.images?.[0] || "",
+        order_id: orderId,
+        method: rzpMethodMap[method],
+        prefill: {
+          // Filled from localStorage if available
+          name: (() => { try { return JSON.parse(localStorage.getItem("user") || "{}").name || ""; } catch { return ""; } })(),
+          email: (() => { try { return JSON.parse(localStorage.getItem("user") || "{}").email || ""; } catch { return ""; } })(),
+        },
+        theme: { color: "#e11d48" },
+        modal: {
+          ondismiss: () => {
+            setStep("review");
+            reject(new Error("Payment cancelled by user"));
+          },
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            await handlePaymentSuccess({
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+              paymentId,
+              amount,
+              orderId,
+            });
+            resolve();
+          } catch (e) {
+            reject(e);
+          }
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+
+      rzp.on("payment.failed", (failureResponse: { error: { description: string } }) => {
+        setStep("review");
+        setError(`Payment failed: ${failureResponse.error?.description || "Unknown error"}`);
+        reject(new Error(failureResponse.error?.description));
+      });
+
+      rzp.open();
+    });
+  };
+
+  /** Confirm the payment on our backend and show receipt */
+  const handlePaymentSuccess = async ({
+    razorpayPaymentId,
+    razorpayOrderId,
+    razorpaySignature,
+    paymentId,
+    orderId,
+  }: {
+    razorpayPaymentId: string;
+    razorpayOrderId: string;
+    razorpaySignature: string;
+    paymentId: string;
+    /** Kept for callers; actual amount comes from confirmRes */
+    amount?: number;
+    orderId: string;
+  }) => {
+    const confirmRes = await paymentService.confirmPayment(paymentId, {
+      razorpayPaymentId,
+      razorpaySignature,
+    });
+
+    setReceiptData({
+      paymentId: confirmRes.payment.razorpayPaymentId,
+      orderId: razorpayOrderId || orderId,
+      amount: confirmRes.payment.amount,
+      date: new Date().toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    });
+
+    setStep("confirmed");
   };
 
   return (
@@ -173,6 +318,12 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
                   >
                     <Sparkles size={15} /> Instant UPI / GPay
                   </button>
+                  <button
+                    className={`method-chip ${paymentMethod === "netbanking" ? "active" : ""}`}
+                    onClick={() => setPaymentMethod("netbanking")}
+                  >
+                    <Lock size={15} /> Net Banking
+                  </button>
                 </div>
               </div>
             </div>
@@ -180,7 +331,7 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
             <footer className="checkout-footer">
               <div className="checkout-guarantee">
                 <Lock size={13} color="#22c55e" />
-                <span>256-Bit Encrypted &middot; Razorpay Escrow Protected</span>
+                <span>256-Bit Encrypted &middot; Razorpay Secured &middot; Test Mode Active</span>
               </div>
               <button
                 className="checkout-pay-btn"
@@ -188,7 +339,7 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
                 disabled={step === "processing"}
               >
                 {step === "processing" ? (
-                  "Authorizing Escrow..."
+                  "Opening Razorpay Checkout..."
                 ) : (
                   <>
                     Pay & Confirm Reservation ₹{totalToPay.toLocaleString()} <ArrowRight size={16} />
@@ -227,6 +378,10 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
                 <div>
                   <label>Payment Reference</label>
                   <span className="mono-text">{receiptData?.paymentId}</span>
+                </div>
+                <div>
+                  <label>Order ID</label>
+                  <span className="mono-text">{receiptData?.orderId}</span>
                 </div>
                 <div>
                   <label>Deposit Escrow</label>

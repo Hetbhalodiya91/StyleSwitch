@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import "dotenv/config";
+import "./config/loadEnv.js";
 import Booking from "./model/Booking.model.js";
 import Cloth from "./model/Cloth.model.js";
 import User from "./model/User.model.js";
