@@ -11,6 +11,12 @@ export const register = async (req, res) => {
     const passwordRegex =
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
+    if (role === "admin") {
+      return res.status(403).json({
+        message: "Registration for administrator role is forbidden. StyleSwitch permits only one designated platform admin.",
+      });
+    }
+
     if (!name?.trim() || !normalizedEmail || !password) {
       return res.status(400).json({
         message: "Name, email and password are required",

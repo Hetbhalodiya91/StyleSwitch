@@ -13,6 +13,7 @@ import { clothService, type ClothItem } from "../api/clothService";
 import { bookingService, type BookedRange } from "../api/bookingService";
 import { useAuth } from "../context/AuthContext";
 import ClothCalendar from "../components/ClothCalendar";
+import CheckoutModal from "../components/CheckoutModal";
 import "./ClothDetailPage.css";
 
 interface ClothDetailPageProps {
@@ -44,6 +45,15 @@ const ClothDetailPage: React.FC<ClothDetailPageProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [createdBooking, setCreatedBooking] = useState<{
+    _id: string;
+    clothId: { _id: string; brand: string; category: string; images?: string[] };
+    startDate: string;
+    endDate: string;
+    totalAmount: number;
+    securityDeposit: number;
+  } | null>(null);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   useEffect(() => {
     loadClothData();
@@ -104,8 +114,25 @@ const ClothDetailPage: React.FC<ClothDetailPageProps> = ({
     setIsSubmitting(true);
     setBookingError(null);
     try {
-      await bookingService.create({ clothId, startDate, endDate });
-      setBookingSuccess(true);
+      const res = await bookingService.create({ clothId, startDate, endDate });
+      if (cloth) {
+        setCreatedBooking({
+          _id: res.booking._id,
+          clothId: {
+            _id: cloth._id,
+            brand: cloth.brand,
+            category: cloth.category,
+            images: cloth.images,
+          },
+          startDate: res.booking.startDate,
+          endDate: res.booking.endDate,
+          totalAmount: res.booking.totalAmount,
+          securityDeposit: res.booking.securityDeposit,
+        });
+        setShowCheckout(true);
+      } else {
+        setBookingSuccess(true);
+      }
     } catch (err) {
       setBookingError(err instanceof Error ? err.message : "Booking failed. Please try again.");
     } finally {
@@ -504,6 +531,20 @@ const ClothDetailPage: React.FC<ClothDetailPageProps> = ({
           </div>
         </div>
       </div>
+
+      {showCheckout && createdBooking && (
+        <CheckoutModal
+          booking={createdBooking}
+          onClose={() => {
+            setShowCheckout(false);
+            setBookingSuccess(true);
+          }}
+          onSuccess={() => {
+            setShowCheckout(false);
+            onNavigate("dashboard");
+          }}
+        />
+      )}
     </div>
   );
 };

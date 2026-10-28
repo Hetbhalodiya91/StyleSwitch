@@ -46,5 +46,19 @@ const UserSchema = new mongoose.Schema({
     timestamps:true
 });
 
+// Enforce singleton administrator rule: ONLY ONE ADMIN IN THE ENTIRE PLATFORM
+UserSchema.pre("save", async function (next) {
+  if (this.isModified("role") && this.role === "admin") {
+    const existingAdmin = await mongoose.model("User").findOne({
+      role: "admin",
+      _id: { $ne: this._id },
+    });
+    if (existingAdmin) {
+      throw new Error("Strict singleton policy: only one single administrator is permitted across the entire platform.");
+    }
+  }
+  next();
+});
+
 const User = mongoose.model('User' , UserSchema);
 export default User;

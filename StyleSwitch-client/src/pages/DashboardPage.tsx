@@ -3,6 +3,7 @@ import { Plus, Clock, Tag, Inbox, AlertCircle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { clothService, type ClothItem } from "../api/clothService";
 import { bookingService, type BookingItem } from "../api/bookingService";
+import CheckoutModal from "../components/CheckoutModal";
 import "./DashboardPage.css";
 
 interface DashboardPageProps {
@@ -22,6 +23,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [checkoutBooking, setCheckoutBooking] = useState<BookingItem | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -239,8 +241,32 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
                           </div>
                         </div>
 
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span className={`status-badge ${b.status}`}>{b.status}</span>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px" }}>
+                          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                            <span className={`status-badge ${b.status}`}>{b.status}</span>
+                            {b.paymentStatus === "PAID" ? (
+                              <span style={{ fontSize: "10.5px", background: "#dcfce7", color: "#15803d", padding: "3px 8px", borderRadius: "4px", fontWeight: 700, fontFamily: "var(--font-mono)" }}>
+                                ✓ PAID &amp; ESCROW SECURED
+                              </span>
+                            ) : b.status !== "REJECTED" ? (
+                              <button
+                                onClick={() => setCheckoutBooking(b)}
+                                style={{
+                                  background: "#e11d48",
+                                  color: "#fff",
+                                  border: "none",
+                                  padding: "4px 10px",
+                                  borderRadius: "4px",
+                                  fontSize: "11px",
+                                  fontWeight: 700,
+                                  cursor: "pointer",
+                                  boxShadow: "0 2px 6px rgba(225,29,72,0.3)",
+                                }}
+                              >
+                                Pay Deposit &amp; Confirm ↗
+                              </button>
+                            ) : null}
+                          </div>
                           <span style={{ fontSize: "11px", color: "#94a3b8" }}>
                             Placed {formatDate(b.createdAt)}
                           </span>
@@ -435,6 +461,29 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
           </>
         )}
       </div>
+
+      {checkoutBooking && checkoutBooking.clothId && (
+        <CheckoutModal
+          booking={{
+            _id: checkoutBooking._id,
+            clothId: {
+              _id: checkoutBooking.clothId._id,
+              brand: checkoutBooking.clothId.brand,
+              category: checkoutBooking.clothId.category,
+              images: checkoutBooking.clothId.images,
+            },
+            startDate: checkoutBooking.startDate,
+            endDate: checkoutBooking.endDate,
+            totalAmount: checkoutBooking.totalAmount,
+            securityDeposit: checkoutBooking.securityDeposit,
+          }}
+          onClose={() => setCheckoutBooking(null)}
+          onSuccess={() => {
+            setCheckoutBooking(null);
+            loadDashboardData();
+          }}
+        />
+      )}
     </div>
   );
 };

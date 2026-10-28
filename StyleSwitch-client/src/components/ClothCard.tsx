@@ -2,6 +2,7 @@ import React from "react";
 import "./ClothCard.css";
 
 interface ClothCardProps {
+  id?: string;
   image?: string;
   name?: string;
   brand: string;
@@ -9,6 +10,8 @@ interface ClothCardProps {
   size: string;
   price: number;
   rating?: number;
+  isWishlisted?: boolean;
+  onToggleWishlist?: (e: React.MouseEvent) => void;
   onRent?: () => void;
   onViewDetail?: () => void;
 }
@@ -21,6 +24,8 @@ const ClothCard: React.FC<ClothCardProps> = ({
   size,
   price,
   rating = 4.8,
+  isWishlisted = false,
+  onToggleWishlist,
   onRent,
   onViewDetail,
 }) => {
@@ -51,11 +56,15 @@ const ClothCard: React.FC<ClothCardProps> = ({
         />
         <span className="available-badge">Available</span>
         <button
-          className="wishlist-btn"
-          title="Add to wishlist"
-          onClick={(e) => e.stopPropagation()}
+          className={`wishlist-btn ${isWishlisted ? "active" : ""}`}
+          title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleWishlist?.(e);
+          }}
+          style={isWishlisted ? { color: "#e11d48", borderColor: "#fecdd3", background: "#fff1f2" } : {}}
         >
-          ♡
+          {isWishlisted ? "♥" : "♡"}
         </button>
       </div>
 

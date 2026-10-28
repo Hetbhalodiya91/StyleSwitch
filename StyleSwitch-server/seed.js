@@ -153,6 +153,25 @@ async function seed() {
       console.log("Created demo lender user: lender.demo@styleswitch.com");
     }
 
+    // Find or create a default demo admin
+    let admin = await User.findOne({ email: "admin.demo@styleswitch.com" });
+    if (!admin) {
+      const hashedAdminPassword = await bcrypt.hash("AdminSwitch@123", 10);
+      admin = await User.create({
+        name: "Atelier Administrator",
+        email: "admin.demo@styleswitch.com",
+        password: hashedAdminPassword,
+        number: "9876500000",
+        role: "admin",
+        address: "StyleSwitch HQ, Mumbai",
+      });
+      console.log("Created demo admin user: admin.demo@styleswitch.com");
+    } else if (admin.role !== "admin") {
+      admin.role = "admin";
+      await admin.save();
+      console.log("Updated admin user role to admin: admin.demo@styleswitch.com");
+    }
+
     // Add lenderId to each cloth
     const clothesWithLender = sampleClothes.map((item) => ({
       ...item,

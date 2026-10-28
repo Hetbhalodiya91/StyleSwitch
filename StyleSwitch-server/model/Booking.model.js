@@ -67,6 +67,7 @@ const bookingSchema = new mongoose.Schema(
         "PAID",
         "FAILED",
         "REFUNDED",
+        "DEPOSIT_REFUNDED",
       ],
       default: "PENDING",
     },
@@ -76,4 +77,8 @@ const bookingSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Booking", bookingSchema);
+// Compound index for instant conflict detection and concurrent calendar queries
+bookingSchema.index({ clothId: 1, status: 1, startDate: 1, endDate: 1 });
+
+const Booking = mongoose.model("Booking", bookingSchema);
+export default Booking;

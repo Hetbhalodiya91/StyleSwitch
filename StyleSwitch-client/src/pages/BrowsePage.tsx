@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from "react";
 import ClothCard from "../components/ClothCard";
 import BookingModal from "../components/BookingModal";
 import { clothService, type ClothItem } from "../api/clothService";
+import { wishlistService } from "../api/wishlistService";
+import { useAuth } from "../context/AuthContext";
 import "./BrowsePage.css";
 
 interface BrowsePageProps {
@@ -10,9 +12,14 @@ interface BrowsePageProps {
 }
 
 const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
+  const { isAuthenticated } = useAuth();
   const [clothes, setClothes] = useState<ClothItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Wishlist state
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
+  const [showOnlyWishlist, setShowOnlyWishlist] = useState(false);
 
   // Booking modal state
   const [selectedClothForBooking, setSelectedClothForBooking] = useState<ClothItem | null>(null);
@@ -29,6 +36,39 @@ const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
   useEffect(() => {
     fetchClothes();
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      wishlistService
+        .getWishlist()
+        .then((res) => {
+          const ids = (res.list || [])
+            .map((item) => (typeof item.clothId === "object" && item.clothId ? item.clothId._id : (item.clothId as unknown as string)))
+            .filter(Boolean);
+          setWishlistIds(ids);
+        })
+        .catch(() => {});
+    }
+  }, [isAuthenticated]);
+
+  const handleToggleWishlist = async (clothId: string) => {
+    if (!isAuthenticated) {
+      onNavigate?.("login");
+      return;
+    }
+    const isSaved = wishlistIds.includes(clothId);
+    try {
+      if (isSaved) {
+        await wishlistService.removeFromWishlist(clothId);
+        setWishlistIds((prev) => prev.filter((id) => id !== clothId));
+      } else {
+        await wishlistService.addToWishlist(clothId);
+        setWishlistIds((prev) => [...prev, clothId]);
+      }
+    } catch (err) {
+      console.warn("Wishlist toggle error:", err);
+    }
+  };
 
   const fetchClothes = async () => {
     setIsLoading(true);
@@ -82,12 +122,15 @@ const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
 
         const matchesPrice = item.rentalPricePerDay <= maxPrice;
 
+        const matchesWishlist = !showOnlyWishlist || wishlistIds.includes(item._id);
+
         return (
           matchesSearch &&
           matchesGender &&
           matchesCategory &&
           matchesSize &&
-          matchesPrice
+          matchesPrice &&
+          matchesWishlist
         );
       })
       .sort((a, b) => {
@@ -95,7 +138,7 @@ const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
         if (sort === "price-high") return b.rentalPricePerDay - a.rentalPricePerDay;
         return 0;
       });
-  }, [clothes, search, gender, category, size, maxPrice, sort]);
+  }, [clothes, search, gender, category, size, maxPrice, sort, showOnlyWishlist, wishlistIds]);
 
   return (
     <div className="browse-page">
@@ -209,10 +252,31 @@ const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
         {/* PRODUCTS SECTION */}
         <main className="products-section">
           <div className="products-topbar">
-            <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
               <p>
                 <strong>{filteredClothes.length}</strong> outfits found
               </p>
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => setShowOnlyWishlist(!showOnlyWishlist)}
+                  style={{
+                    background: showOnlyWishlist ? "#e11d48" : "#ffffff",
+                    color: showOnlyWishlist ? "#ffffff" : "#475569",
+                    border: "1px solid #cbd5e1",
+                    padding: "6px 12px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                >
+                  {showOnlyWishlist ? "♥ Showing Saved Vault" : "♡ Filter Saved Vault"} ({wishlistIds.length})
+                </button>
+              )}
             </div>
 
             <select value={sort} onChange={(e) => setSort(e.target.value)}>
@@ -271,6 +335,8 @@ const BrowsePage = ({ onNavigate, onViewDetail }: BrowsePageProps) => {
                   size={cloth.size}
                   price={cloth.rentalPricePerDay}
                   rating={4.8}
+                  isWishlisted={wishlistIds.includes(cloth._id)}
+                  onToggleWishlist={() => handleToggleWishlist(cloth._id)}
                   onViewDetail={() => onViewDetail?.(cloth._id)}
                   onRent={() => onViewDetail?.(cloth._id)}
                 />

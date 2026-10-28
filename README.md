@@ -193,6 +193,9 @@ npm install
 # Start the Vite development server
 npm run dev
 # Open http://localhost:5173/ or http://localhost:5174/ in your browser
+
+# Run the automated unit test suite (calendar math, double-booking guard, single admin security)
+npm test
 ```
 
 ### 5. Running the 10-User Concurrent Load Test
@@ -208,6 +211,7 @@ node loadtest.js
 
 | Role | Email | Password | Purpose |
 | :--- | :--- | :--- | :--- |
+| **Demo Admin** | `admin.demo@styleswitch.com` | `AdminSwitch@123` | Platform oversight, user bans/roles, garment moderation & disputes |
 | **Demo Lender** | `lender.demo@styleswitch.com` | `StyleSwitch@123` | Inspect incoming booking requests & listed wardrobe |
 | **Demo Renter** | `testrenter@styleswitch.com` | `Pass1234!` | Browse, select calendar dates & place reservations |
 
@@ -230,6 +234,25 @@ node loadtest.js
 | `GET` | `/api/bookings/my` | Protected | Get renter's active & past bookings |
 | `GET` | `/api/bookings/lender` | Protected | Get lender's incoming rental requests |
 | `PUT` | `/api/bookings/:id` | Protected | Update booking status (`CONFIRMED`, `REJECTED`, `COMPLETED`) |
+| `GET` | `/api/admin/overview` | Admin | High-level platform KPIs, gross revenue & recent activity |
+| `GET` | `/api/admin/users` | Admin | Retrieve all registered users |
+| `POST` | `/api/admin/users/:id/toggle-block` | Admin | Block or unblock fraudulent or abusive accounts |
+| `PUT` | `/api/admin/users/:id/role` | Admin | Update user role (`admin`, `lender`, `tenant`) |
+| `GET` | `/api/admin/clothes` | Admin | All garments across all lenders |
+| `POST` | `/api/admin/clothes/:id/toggle-availability` | Admin | Archive/hide or publish garments |
+| `DELETE` | `/api/admin/clothes/:id` | Admin | Permanent garment takedown |
+| `GET` | `/api/admin/bookings` | Admin | Master ledger of all platform bookings |
+| `PUT` | `/api/admin/bookings/:id/status` | Admin | Force update/override booking status |
+| `GET` | `/api/admin/reports` | Admin | All dispute/incident reports |
+| `PUT` | `/api/admin/reports/:id` | Admin | Update report status & attach admin notes |
+| `POST` | `/api/payments/create-order` | Protected | Create payment order with refundable security deposit |
+| `POST` | `/api/payments/:id/confirm` | Protected | Confirm payment & auto-dispatch in-app alerts |
+| `POST` | `/api/payments/:id/refund-deposit` | Protected | Release deposit return to renter |
+| `GET` | `/api/notifications` | Protected | Retrieve user notifications & booking alerts |
+| `POST` | `/api/notifications/:id/read` | Protected | Mark notification as read |
+| `GET` | `/api/wishlist` | Protected | Retrieve bookmarked outfits in Saved Vault |
+| `POST` | `/api/wishlist` | Protected | Add piece to Saved Vault |
+| `DELETE` | `/api/wishlist/:clothId` | Protected | Remove piece from Saved Vault |
 
 ---
 

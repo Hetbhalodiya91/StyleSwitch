@@ -27,6 +27,8 @@ const AuthPage = ({ mode, onSwitch, onSuccess }: AuthPageProps) => {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const isSignup = mode === "signup";
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -184,6 +186,73 @@ const AuthPage = ({ mode, onSwitch, onSuccess }: AuthPageProps) => {
                     </label>
                   )}
 
+                  {!isSignup && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "8px" }}>
+                      <span style={{ fontSize: "11px", fontFamily: "var(--font-mono, monospace)", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                        Instant Demo Credentials
+                      </span>
+                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail("admin.demo@styleswitch.com");
+                            setPassword("AdminSwitch@123");
+                          }}
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            background: "#0f172a",
+                            color: "#fff",
+                            border: "1px solid #334155",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          🛡️ Demo Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail("lender.demo@styleswitch.com");
+                            setPassword("StyleSwitch@123");
+                          }}
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            background: "#f1f5f9",
+                            color: "#0f172a",
+                            border: "1px solid #cbd5e1",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          👗 Demo Lender
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail("testrenter@styleswitch.com");
+                            setPassword("Pass1234!");
+                          }}
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: 600,
+                            background: "#f1f5f9",
+                            color: "#0f172a",
+                            border: "1px solid #cbd5e1",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          🛍️ Demo Renter
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <label className="form-field">
                     <span>Email Address</span>
                     <div className="input-wrap">
@@ -193,6 +262,8 @@ const AuthPage = ({ mode, onSwitch, onSuccess }: AuthPageProps) => {
                         type="email"
                         name="email"
                         placeholder="you@domain.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                   </label>
@@ -207,6 +278,8 @@ const AuthPage = ({ mode, onSwitch, onSuccess }: AuthPageProps) => {
                         type={showPassword ? "text" : "password"}
                         name="password"
                         placeholder="Min 8 chars, 1 uppercase, 1 number, 1 symbol"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                       <button
                         type="button"

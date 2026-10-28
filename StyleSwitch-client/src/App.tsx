@@ -6,6 +6,7 @@ import AddClothing from "./pages/AddClothing";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import ClothDetailPage from "./pages/ClothDetailPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import Footer from "./components/Footer";
 import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
@@ -19,12 +20,27 @@ function AppContent() {
     setPage("cloth-detail");
   };
 
+  const handleLoginSuccess = () => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        const u = JSON.parse(stored);
+        if (u.role === "admin") {
+          setPage("admin");
+          return;
+        }
+      }
+    } catch {}
+    setPage("browse");
+  };
+
   const renderPage = () => {
     if (page === "browse") return <BrowsePage onNavigate={setPage} onViewDetail={navigateToDetail} />;
     if (page === "add") return <AddClothing onNavigate={setPage} />;
-    if (page === "login") return <AuthPage mode="login" onSwitch={() => setPage("signup")} onSuccess={() => setPage("browse")} />;
+    if (page === "login") return <AuthPage mode="login" onSwitch={() => setPage("signup")} onSuccess={handleLoginSuccess} />;
     if (page === "signup") return <AuthPage mode="signup" onSwitch={() => setPage("login")} onSuccess={() => setPage("login")} />;
     if (page === "dashboard") return <DashboardPage onNavigate={setPage} />;
+    if (page === "admin") return <AdminDashboardPage onNavigate={setPage} onViewDetail={navigateToDetail} />;
     if (page === "cloth-detail" && selectedClothId) return <ClothDetailPage clothId={selectedClothId} onNavigate={setPage} />;
     return <LandingPage onBrowse={() => setPage("browse")} onSignup={() => setPage("signup")} onViewDetail={navigateToDetail} />;
   };

@@ -1,0 +1,423 @@
+/* ==========================================================================
+   STYLE / SWITCH — Luxury Escrow Checkout Modal
+   ========================================================================== */
+
+.checkout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 10, 15, 0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.checkout-modal {
+  position: relative;
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  animation: modalEnter 0.25s ease-out;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.checkout-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: #f1f5f9;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
+}
+
+.checkout-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.checkout-content {
+  padding: 28px 28px 24px;
+}
+
+.checkout-header {
+  margin-bottom: 20px;
+}
+
+.checkout-seal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.15em;
+  font-weight: 700;
+  color: #e11d48;
+  background: rgba(225, 29, 72, 0.06);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(225, 29, 72, 0.15);
+  margin-bottom: 10px;
+}
+
+.checkout-header h2 {
+  font-family: var(--font-display, "Cinzel", serif);
+  font-size: 22px;
+  font-weight: 800;
+  color: #090a0f;
+  margin: 0 0 6px;
+}
+
+.checkout-header p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.checkout-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  margin-bottom: 18px;
+}
+
+/* Garment preview */
+.checkout-item-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 18px;
+}
+
+.checkout-item-thumb {
+  width: 52px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 6px;
+  background: #0b0c0e;
+}
+
+.checkout-item-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checkout-brand {
+  font-family: var(--font-display, serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.checkout-category {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.checkout-dates {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: #e11d48;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* Breakdown */
+.checkout-breakdown {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #ffffff;
+}
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.breakdown-row:last-child {
+  margin-bottom: 0;
+}
+
+.escrow-pill {
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.free-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: #22c55e;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.breakdown-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0;
+}
+
+.breakdown-row.total {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.total-val {
+  font-family: var(--font-display, serif);
+  font-size: 20px;
+  font-weight: 800;
+  color: #e11d48;
+}
+
+/* Methods */
+.checkout-methods {
+  margin-bottom: 22px;
+}
+
+.methods-label {
+  display: block;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.method-chips {
+  display: flex;
+  gap: 10px;
+}
+
+.method-chip {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.method-chip.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+/* Footer */
+.checkout-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkout-guarantee {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.checkout-pay-btn {
+  background: #e11d48;
+  color: #ffffff;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+}
+
+.checkout-pay-btn:hover:not(:disabled) {
+  background: #be123c;
+}
+
+.checkout-pay-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Receipt Screen */
+.checkout-receipt {
+  padding: 32px 28px 24px;
+  text-align: center;
+}
+
+.receipt-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.receipt-banner h3 {
+  font-family: var(--font-display, serif);
+  font-size: 22px;
+  margin: 12px 0 6px;
+  color: #0f172a;
+}
+
+.receipt-banner p {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0;
+}
+
+.receipt-specimen {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+  padding: 18px;
+  text-align: left;
+  margin-bottom: 22px;
+}
+
+.specimen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.specimen-seal {
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #e11d48;
+  letter-spacing: 0.1em;
+}
+
+.specimen-id {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.specimen-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.specimen-grid label {
+  display: block;
+  font-size: 10.5px;
+  font-family: var(--font-mono, monospace);
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.mono-text {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+}
+
+.specimen-total {
+  font-family: var(--font-display, serif);
+  font-size: 16px;
+  color: #e11d48;
+}
+
+.receipt-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-print {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-done {
+  flex: 1.5;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}

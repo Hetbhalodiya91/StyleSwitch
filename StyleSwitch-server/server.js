@@ -10,6 +10,7 @@ import wishlistRoutes from "./routes/Wishlist.route.js";
 import reportRoutes from "./routes/Report.route.js";
 import bookingRoutes from "./routes/Booking.route.js";
 import paymentRoutes from "./routes/Payment.route.js";
+import adminRoutes from "./routes/Admin.route.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
