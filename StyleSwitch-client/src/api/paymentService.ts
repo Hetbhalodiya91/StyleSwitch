@@ -8,6 +8,7 @@ export interface CreateOrderResponse {
     currency: string;
     key: string;
     paymentId: string;
+    testMode: boolean;
     booking: {
       _id: string;
       clothId: {

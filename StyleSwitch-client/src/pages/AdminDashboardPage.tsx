@@ -248,6 +248,29 @@ export default function AdminDashboardPage({ onNavigate, onViewDetail }: AdminDa
     (r) => reportFilter === "ALL" || r.status === reportFilter
   );
 
+  const getLenderEarnings = (userId: string) => {
+    return bookingsList
+      .filter((b) => b.lenderId?._id === userId && (b.status === "CONFIRMED" || b.status === "COMPLETED"))
+      .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+  };
+
+  const getLenderCompletedCount = (userId: string) => {
+    return bookingsList.filter(
+      (b) => b.lenderId?._id === userId && (b.status === "CONFIRMED" || b.status === "COMPLETED")
+    ).length;
+  };
+
+  const topLenders = usersList
+    .map((u) => ({
+      user: u,
+      totalEarned: getLenderEarnings(u._id),
+      completedRentals: getLenderCompletedCount(u._id),
+      closetCount: clothesList.filter((c) => c.lenderId?._id === u._id).length,
+    }))
+    .filter((l) => l.totalEarned > 0 || l.user.role === "lender")
+    .sort((a, b) => b.totalEarned - a.totalEarned)
+    .slice(0, 6);
+
   return (
     <div className="admin-container">
       {/* Top Banner & Title */}
@@ -471,6 +494,47 @@ export default function AdminDashboardPage({ onNavigate, onViewDetail }: AdminDa
                 </div>
               </div>
             </div>
+
+            {/* Top Earning Lenders Leaderboard Grid */}
+            <div className="admin-panel" style={{ marginTop: "24px" }}>
+              <div className="admin-panel-head">
+                <div>
+                  <h3>Top Earning Lenders Leaderboard</h3>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>
+                    Verified atelier owners generating revenue volume across StyleSwitch
+                  </p>
+                </div>
+                <button onClick={() => setActiveTab("users")} className="panel-link">
+                  Manage all users <ArrowUpRight size={14} />
+                </button>
+              </div>
+
+              <div className="admin-lenders-grid">
+                {topLenders.map((l, idx) => (
+                  <div key={l.user._id} className="admin-lender-card">
+                    <div className="admin-lender-rank">#{idx + 1}</div>
+                    <div className="admin-lender-info">
+                      <strong>{l.user.name}</strong>
+                      <span className="sub">{l.user.email}</span>
+                      <div className="admin-lender-metrics">
+                        <span>{l.closetCount} Pieces Listed</span>
+                        <span>&middot;</span>
+                        <span>{l.completedRentals} Rentals</span>
+                      </div>
+                    </div>
+                    <div className="admin-lender-earning">
+                      <span className="lbl">Total Earned</span>
+                      <strong className="amt">₹{l.totalEarned.toLocaleString("en-IN")}</strong>
+                    </div>
+                  </div>
+                ))}
+                {topLenders.length === 0 && (
+                  <div className="empty-cell" style={{ padding: "24px" }}>
+                    No lender earnings recorded yet.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -497,6 +561,7 @@ export default function AdminDashboardPage({ onNavigate, onViewDetail }: AdminDa
                     <th>User / Contact</th>
                     <th>Role</th>
                     <th>Account Status</th>
+                    <th>Total Earning (Lender)</th>
                     <th>Joined</th>
                     <th style={{ textAlign: "right" }}>Administrative Actions</th>
                   </tr>
@@ -538,6 +603,14 @@ export default function AdminDashboardPage({ onNavigate, onViewDetail }: AdminDa
                           </span>
                         )}
                       </td>
+                      <td>
+                        <strong style={{ color: "#15803d", fontFamily: "var(--font-mono)", fontSize: "13.5px" }}>
+                          ₹{getLenderEarnings(u._id).toLocaleString("en-IN")}
+                        </strong>
+                        <span className="sub" style={{ display: "block", fontSize: "10.5px", color: "#94a3b8" }}>
+                          {getLenderCompletedCount(u._id)} completed
+                        </span>
+                      </td>
                       <td>{new Date(u.createdAt).toLocaleDateString()}</td>
                       <td style={{ textAlign: "right" }}>
                         {u.role === "admin" ? (
@@ -555,7 +628,7 @@ export default function AdminDashboardPage({ onNavigate, onViewDetail }: AdminDa
                   ))}
                   {filteredUsers.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="empty-cell">No users matched search criteria.</td>
+                      <td colSpan={6} className="empty-cell">No users matched search criteria.</td>
                     </tr>
                   )}
                 </tbody>

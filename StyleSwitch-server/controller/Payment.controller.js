@@ -29,6 +29,7 @@ export const createOrder = async (req, res) => {
     const totalToPay = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
 
     let orderId = `order_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    let isTestMode = true; // will be set false if real Razorpay order is created
     const keyId = process.env.RAZORPAY_KEY_ID?.trim();
     const keySecret = process.env.RAZORPAY_KEY_SECRET?.trim();
 
@@ -42,20 +43,34 @@ export const createOrder = async (req, res) => {
           receipt: `rcpt_${booking._id.toString().slice(-8)}`,
         });
         orderId = rzpOrder.id;
+        isTestMode = false; // real order created successfully
       } catch (rzpErr) {
         const statusCode = rzpErr.statusCode || 502;
         const razorpayError = rzpErr.error || {};
-        const isAuthenticationError = statusCode === 401;
-        const message = isAuthenticationError
-          ? "Razorpay authentication failed. Check that the key ID and secret are a matching, active pair from the same account and mode."
-          : "Razorpay could not create the order. Please try again.";
+        const isAuthError = statusCode === 401;
 
         console.error("Razorpay order creation failed:", {
           statusCode,
           code: razorpayError.code,
           description: razorpayError.description,
         });
-        return res.status(502).json({ success: false, message });
+
+        if (isAuthError) {
+          // In development: fall back to simulated order so UI still works
+          // In production: block the payment
+          if (process.env.NODE_ENV === "production") {
+            return res.status(502).json({
+              success: false,
+              message:
+                "Razorpay authentication failed. Check that RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are a matching, active pair from the same Razorpay account and mode (test/live).",
+            });
+          }
+          // Dev fallback — simulated order ID, testMode flag tells frontend to skip popup
+          console.warn("⚠️  Razorpay 401 — falling back to simulated order (dev mode). Fix your credentials to enable real payments.");
+          isTestMode = true;
+        } else {
+          return res.status(502).json({ success: false, message: "Razorpay could not create the order. Please try again." });
+        }
       }
     }
 
@@ -76,6 +91,7 @@ export const createOrder = async (req, res) => {
         currency: "INR",
         key: keyId || "rzp_test_styleswitch",
         paymentId: payment._id,
+        testMode: isTestMode,  // tells frontend to skip Razorpay popup
         booking,
       },
     });

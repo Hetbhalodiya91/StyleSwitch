@@ -868,3 +868,100 @@
   font-style: italic;
   font-weight: 600;
 }
+
+
+/* ==========================================================================
+   TOP EARNING LENDERS LEADERBOARD GRID (ADMIN OVERVIEW)
+   ========================================================================== */
+
+.admin-lenders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 20px;
+}
+
+.admin-lender-card {
+  background: #fafafb;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all 0.2s ease;
+}
+
+.admin-lender-card:hover {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 14px rgba(17, 18, 21, 0.05);
+  transform: translateY(-1px);
+}
+
+.admin-lender-rank {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #111215;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.admin-lender-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-lender-info strong {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-lender-info .sub {
+  display: block;
+  font-size: 11.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+.admin-lender-metrics {
+  display: flex;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.admin-lender-earning {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.admin-lender-earning .lbl {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.admin-lender-earning .amt {
+  font-size: 15px;
+  font-weight: 800;
+  font-family: var(--font-mono, monospace);
+  color: #15803d;
+}

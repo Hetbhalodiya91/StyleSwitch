@@ -87,12 +87,11 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
       } as const)[paymentMethod];
 
       const orderRes = await paymentService.createOrder(booking._id, selectedPaymentMethod);
-      const { id: rzpOrderId, amount, key: rzpKey, paymentId } = orderRes.order;
+      const { id: rzpOrderId, amount, key: rzpKey, paymentId, testMode } = orderRes.order;
 
-      // 2. Check if real Razorpay key is present and script loaded
-      const isRealKey = rzpKey && !rzpKey.includes("styleswitch") && !rzpKey.includes("test_fake");
-
-      if (isRealKey && scriptReady && window.Razorpay) {
+      // Use real Razorpay popup only when server confirms real order was created
+      const canUseRealCheckout = !testMode && rzpKey && scriptReady && window.Razorpay;
+      if (canUseRealCheckout) {
         // ── REAL RAZORPAY CHECKOUT ──────────────────────────────────────────
         await openRazorpayPopup({
           key: rzpKey,
@@ -102,7 +101,7 @@ export default function CheckoutModal({ booking, onClose, onSuccess }: CheckoutM
           paymentMethod,
         });
       } else {
-        // ── FALLBACK: simulated checkout (dev / missing keys) ───────────────
+        // ── FALLBACK: simulated checkout (dev / bad credentials) ────────────
         await new Promise((r) => setTimeout(r, 1200));
         await handlePaymentSuccess({
           razorpayPaymentId: `pay_${Date.now()}_simulated`,

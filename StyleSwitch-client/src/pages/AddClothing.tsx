@@ -160,7 +160,7 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
     size: "M",
     gender: "Men",
     color: "",
-    purchaseYear: "",
+    purchaseYear: new Date().getFullYear().toString(),
     pricePerDay: "",
     securityDeposit: "",
     description: "",
@@ -204,9 +204,50 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+      // If not an image or very small (under 150KB), read directly
+      if (!file.type.startsWith("image/") || file.size < 150 * 1024) {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+        return;
+      }
+
+      // Optimize/compress larger images via Canvas to avoid 413 Payload Too Large
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const maxDimension = 1600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            return resolve(e.target?.result as string);
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL("image/jpeg", 0.85);
+          resolve(compressed);
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+      };
       reader.onerror = (error) => reject(error);
     });
   };
@@ -237,6 +278,7 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
     if (
       !formData.brand.trim() ||
       !formData.color.trim() ||
+      !formData.purchaseYear ||
       !formData.pricePerDay ||
       !formData.location.trim() ||
       !formData.city.trim() ||
@@ -244,7 +286,7 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
     ) {
       setStatusMessage({
         type: "error",
-        text: "Please fill in all required fields (Brand, Color, Price, Pickup Location, City, and Pincode).",
+        text: "Please fill in all required fields (Brand, Color, Purchase Year, Price, Pickup Location, City, and Pincode).",
       });
       return;
     }
@@ -269,6 +311,7 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
         color: formData.color.trim(),
         description: formData.description?.trim() || formData.clothName,
         purchaseDate: new Date(`${formData.purchaseYear || new Date().getFullYear()}-01-01`),
+        purchaseYear: new Date(`${formData.purchaseYear || new Date().getFullYear()}-01-01`),
         condition: formData.condition,
         conditionDescription: `${formData.clothName} - in ${formData.condition} condition`,
         images: uploadedImages,
@@ -530,6 +573,22 @@ const AddClothing: React.FC<AddClothingProps> = ({ onNavigate }) => {
                   required
                   placeholder="e.g. Midnight Navy"
                   value={formData.color}
+                  onChange={handleChange}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Purchase Year <span>*</span>
+                </label>
+                <input
+                  type="number"
+                  name="purchaseYear"
+                  required
+                  min="1990"
+                  max={new Date().getFullYear()}
+                  placeholder={String(new Date().getFullYear())}
+                  value={formData.purchaseYear}
                   onChange={handleChange}
                 />
               </div>
